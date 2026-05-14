@@ -4,7 +4,6 @@ import cl.proyecto.Factura.dto.FacturaRequestDTO;
 import cl.proyecto.Factura.dto.FacturaResponseDTO;
 import cl.proyecto.Factura.model.Factura;
 import cl.proyecto.Factura.repository.FacturaRepository;
-import cl.proyecto.Factura.webclient.HospitalizacionClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,20 +18,16 @@ import java.util.stream.Collectors;
 public class FacturaService {
 
     private final FacturaRepository facturaRepository;
-    private final HospitalizacionClient hospitalizacionClient;
 
     // ── MAPEO PRIVADO: Entidad → ResponseDTO ─────────
     private FacturaResponseDTO mapToDTO(Factura factura) {
-        String motivo = hospitalizacionClient
-                .obtenerMotivo(factura.getCodHospitalizacion());
         return new FacturaResponseDTO(
                 factura.getNumFactura(),
                 factura.getTotalNeto(),
                 factura.getIva(),
                 factura.getTotalPagar(),
                 factura.getEstadoPago(),
-                factura.getCodHospitalizacion(),
-                motivo
+                factura.getCodHospitalizacion()
         );
     }
 

@@ -17,6 +17,5 @@ public class FacturaResponseDTO {
     private BigDecimal totalPagar;
     private String estadoPago;
     private Long codHospitalizacion;
-    private String motivoHospitalizacion; // viene del WebClient
 
 }
