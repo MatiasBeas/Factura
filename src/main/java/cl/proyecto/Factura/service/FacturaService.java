@@ -19,7 +19,7 @@ public class FacturaService {
 
     private final FacturaRepository facturaRepository;
 
-    // ── MAPEO PRIVADO: Entidad → ResponseDTO ─────────
+    //-----------------MAPEO PRIVADO: FACTURA -> ResponseDTO----------
     private FacturaResponseDTO mapToDTO(Factura factura) {
         return new FacturaResponseDTO(
                 factura.getNumFactura(),
@@ -31,7 +31,7 @@ public class FacturaService {
         );
     }
 
-    // ── OBTENER TODOS ────────────────────────────────
+    //-----------------BUSCAR FACTURA DE DISTINTAS FORMAS----------
     public List<FacturaResponseDTO> obtenerTodos() {
         return facturaRepository.findAll()
                 .stream()
@@ -39,12 +39,10 @@ public class FacturaService {
                 .collect(Collectors.toList());
     }
 
-    // ── OBTENER POR ID ───────────────────────────────
     public Optional<FacturaResponseDTO> obtenerPorId(Long id) {
         return facturaRepository.findById(id).map(this::mapToDTO);
     }
 
-    // ── OBTENER POR ESTADO ───────────────────────────
     public List<FacturaResponseDTO> obtenerPorEstado(String estadoPago) {
         return facturaRepository.findByEstadoPago(estadoPago)
                 .stream()
@@ -52,6 +50,7 @@ public class FacturaService {
                 .collect(Collectors.toList());
     }
 
+    //-----------------GUARDAR FACTURA----------
     public FacturaResponseDTO guardar(FacturaRequestDTO dto) {
         BigDecimal iva = dto.getTotalNeto()
                 .multiply(new BigDecimal("0.19"))
@@ -69,6 +68,7 @@ public class FacturaService {
         return mapToDTO(facturaRepository.save(factura));
     }
 
+    //-----------------ACTUALIZACION FACTURA----------
     public Optional<FacturaResponseDTO> actualizar(Long id, FacturaRequestDTO dto) {
         return facturaRepository.findById(id).map(existente -> {
             BigDecimal iva = dto.getTotalNeto()
@@ -85,7 +85,7 @@ public class FacturaService {
         });
     }
 
-    // ── ELIMINAR ─────────────────────────────────────
+    //-----------------ELIMINAR HISTORIAL----------
     public void eliminar(Long id) {
         facturaRepository.deleteById(id);
     }
