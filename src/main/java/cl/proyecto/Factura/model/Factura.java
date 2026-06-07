@@ -36,4 +36,8 @@ public class Factura {
     @Column(nullable = false)
     private Long codHospitalizacion;
 
+    @NotNull(message = "El rut del Paciente es obligatorio")
+    @Column(nullable = false)
+    private String pacienteRun;
+
 }
