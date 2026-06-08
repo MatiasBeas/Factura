@@ -21,10 +21,18 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/doc/swagger-ui.html",
+                                "/doc/swagger-ui/**"
+                        ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/facturas/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/facturas/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/facturas/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/facturas/**").authenticated()
+                        .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasic -> {});
         return http.build();
