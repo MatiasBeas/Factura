@@ -27,4 +27,18 @@ public class HospitalizacionClient {
             return "Sin diagnóstico";
         }
     }
+
+    public boolean existeHistorial(Long codHospitalizacion) {
+        try {
+            Map response = webClientHospitalizacion
+                    .get()
+                    .uri("/Hospitalizacion/" + codHospitalizacion)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+            return response != null && response.get("") != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

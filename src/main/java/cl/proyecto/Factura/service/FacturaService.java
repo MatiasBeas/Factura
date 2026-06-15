@@ -73,6 +73,10 @@ public class FacturaService {
             throw new RuntimeException("No existe un paciente con el RUN: " + dto.getPacienteRun());
         }
 
+        if (!hospitalizacionClient.existeHistorial(dto.getCodHospitalizacion())) {
+            throw new RuntimeException("No existe un Historial con el ID: " + dto.getCodHospitalizacion());
+        }
+
         BigDecimal iva = dto.getTotalNeto()
                 .multiply(new BigDecimal("0.19"))
                 .setScale(2, RoundingMode.HALF_UP);
@@ -97,6 +101,10 @@ public class FacturaService {
 
         if (!pacienteClient.existePaciente(dto.getPacienteRun())) {
             throw new RuntimeException("No existe un paciente con el RUN: " + dto.getPacienteRun());
+        }
+
+        if (!hospitalizacionClient.existeHistorial(dto.getCodHospitalizacion())) {
+            throw new RuntimeException("No existe un Historial con el ID: " + dto.getCodHospitalizacion());
         }
 
         return facturaRepository.findById(id).map(existente -> {

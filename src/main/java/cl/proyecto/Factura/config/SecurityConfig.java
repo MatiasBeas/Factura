@@ -1,55 +1,74 @@
 package cl.proyecto.Factura.config;
 
+import cl.proyecto.Factura.security.JwtAuthFilter;
+import cl.proyecto.Factura.security.UserDetailsServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtAuthFilter jwtAuthFilter;
+    private final UserDetailsServiceImpl userDetailsService; // <-- inyecta el @Service directo
+
     @Bean
-    public SecurityFilterChain filtroPro(HttpSecurity http) throws Exception {
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService); // <-- usa el campo inyectado
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/doc/swagger-ui.html",
+                                "/v3/api-docs/**", "/swagger-ui/**",
+                                "/swagger-ui.html", "/doc/swagger-ui.html",
                                 "/doc/swagger-ui/**"
                         ).permitAll()
+
+                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/facturas/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/facturas/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/facturas/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/facturas/**").authenticated()
                         .anyRequest().authenticated()
                 )
-                .httpBasic(httpBasic -> {});
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
-    @Bean
-    public InMemoryUserDetailsManager userDetailsManager(PasswordEncoder encoder) {
-        UserDetails user = User.builder()
-                .username("Maty")
-                .password(encoder.encode("DuocUC..2026"))
-                .roles("ADMIN")
-                .build();
-        return new InMemoryUserDetailsManager(user);
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 }
